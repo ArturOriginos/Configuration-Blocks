@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    { "item": "minecraft:paper" },
+    { "item": "minecraft:redstone" },
+    { "item": "minecraft:glowstone_dust" },
+    { "item": "minecraft:iron_ingot" }
+  ],
+  "result": {
+    "id": "configurationblocks:configurator",
+    "count": 1
+  }
+}
