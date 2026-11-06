@@ -4,7 +4,7 @@ license = "MIT"
 
 [[mods]]
 modId = "configurationblocks"
-version = "1.4.0"
+version = "1.4.1"
 displayName = "Configuration Blocks"
 description = '''
 Adds the Configurator - a paper that lets you change almost any property of a placed block:
