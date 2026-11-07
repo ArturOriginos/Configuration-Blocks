@@ -40,11 +40,15 @@ public class BlockConfig {
     public static final ResourceLocation DEFAULT_SPAWN = ResourceLocation.parse("minecraft:pig");
     public ResourceLocation spawnerEntity = DEFAULT_SPAWN;
     public BaseSpawner spawner;             // runtime only
-    public ResourceLocation spawnerBound;   // runtime only
+    public int spawnerMinDelay = 200;   // ticks
+    public int spawnerMaxDelay = 800;   // ticks
+    public int spawnerCount = 4;        // mobs per spawn attempt
+    public int spawnerMaxNearby = 6;
+    public int spawnerPlayerRange = 16;
+    public int spawnerRange = 4;        // spawn radius
 
     // ---- storage settings ----
     public int storageRows = 3;     // chest only, 1..6 rows of 9 slots
-    public int stackLimit = 64;     // chest / shulker, 1..99 items per slot (stackable items)
     public boolean locked;          // only the owner (or ops) may use / edit / break
     public UUID owner;
 
@@ -79,7 +83,12 @@ public class BlockConfig {
         light = Mth.clamp(light, 0, 15);
         bounce = Float.isNaN(bounce) ? 0 : Mth.clamp(bounce, 0F, 10F);
         storageRows = Mth.clamp(storageRows, 1, 6);
-        stackLimit = Mth.clamp(stackLimit, 1, 99);
+        spawnerMinDelay = Mth.clamp(spawnerMinDelay, 1, 32000);
+        spawnerMaxDelay = Mth.clamp(spawnerMaxDelay, spawnerMinDelay, 32000);
+        spawnerCount = Mth.clamp(spawnerCount, 1, 64);
+        spawnerMaxNearby = Mth.clamp(spawnerMaxNearby, 1, 500);
+        spawnerPlayerRange = Mth.clamp(spawnerPlayerRange, 1, 128);
+        spawnerRange = Mth.clamp(spawnerRange, 1, 16);
         if (spawnerEntity == null || !BuiltInRegistries.ENTITY_TYPE.containsKey(spawnerEntity)
                 || !BuiltInRegistries.ENTITY_TYPE.get(spawnerEntity).canSummon()) {
             spawnerEntity = DEFAULT_SPAWN;
@@ -96,7 +105,12 @@ public class BlockConfig {
         bounce = o.bounce;
         spawnerEntity = o.spawnerEntity;
         storageRows = o.storageRows;
-        stackLimit = o.stackLimit;
+        spawnerMinDelay = o.spawnerMinDelay;
+        spawnerMaxDelay = o.spawnerMaxDelay;
+        spawnerCount = o.spawnerCount;
+        spawnerMaxNearby = o.spawnerMaxNearby;
+        spawnerPlayerRange = o.spawnerPlayerRange;
+        spawnerRange = o.spawnerRange;
         locked = o.locked;
         spawner = null;
     }
@@ -107,10 +121,6 @@ public class BlockConfig {
             case SHULKER_BOX -> 27;
             default -> behavior.containerSize();
         };
-    }
-
-    public int effectiveLimit() {
-        return (behavior == Behavior.CHEST || behavior == Behavior.SHULKER_BOX) ? stackLimit : 64;
     }
 
     public boolean canAccess(Player p) {
@@ -134,7 +144,6 @@ public class BlockConfig {
             }
             container = nc;
         }
-        container.setLimit(effectiveLimit());
         return container;
     }
 
@@ -142,7 +151,6 @@ public class BlockConfig {
     public void fitContainer(Level level, BlockPos at) {
         if (container == null) return;
         int slots = slotCount();
-        int lim = effectiveLimit();
         double x = at.getX() + 0.5, y = at.getY() + 0.5, z = at.getZ() + 0.5;
         for (int i = 0; i < container.getContainerSize(); i++) {
             ItemStack st = container.getItem(i);
@@ -150,9 +158,6 @@ public class BlockConfig {
             if (i >= slots) {
                 Containers.dropItemStack(level, x, y, z, st);
                 container.setItem(i, ItemStack.EMPTY);
-            } else if (st.getMaxStackSize() > 1 && st.getCount() > lim) {
-                ItemStack extra = st.split(st.getCount() - lim);
-                Containers.dropItemStack(level, x, y, z, extra);
             }
         }
     }
@@ -188,7 +193,12 @@ public class BlockConfig {
         buf.writeFloat(bounce);
         buf.writeResourceLocation(spawnerEntity);
         buf.writeVarInt(storageRows);
-        buf.writeVarInt(stackLimit);
+        buf.writeVarInt(spawnerMinDelay);
+        buf.writeVarInt(spawnerMaxDelay);
+        buf.writeVarInt(spawnerCount);
+        buf.writeVarInt(spawnerMaxNearby);
+        buf.writeVarInt(spawnerPlayerRange);
+        buf.writeVarInt(spawnerRange);
         buf.writeBoolean(locked);
     }
 
@@ -203,7 +213,12 @@ public class BlockConfig {
         c.bounce = buf.readFloat();
         c.spawnerEntity = buf.readResourceLocation();
         c.storageRows = buf.readVarInt();
-        c.stackLimit = buf.readVarInt();
+        c.spawnerMinDelay = buf.readVarInt();
+        c.spawnerMaxDelay = buf.readVarInt();
+        c.spawnerCount = buf.readVarInt();
+        c.spawnerMaxNearby = buf.readVarInt();
+        c.spawnerPlayerRange = buf.readVarInt();
+        c.spawnerRange = buf.readVarInt();
         c.locked = buf.readBoolean();
         return c;
     }
@@ -221,7 +236,12 @@ public class BlockConfig {
         t.putFloat("bounce", bounce);
         t.putString("spawner_entity", spawnerEntity.toString());
         t.putInt("rows", storageRows);
-        t.putInt("stack_limit", stackLimit);
+        t.putInt("sp_min", spawnerMinDelay);
+        t.putInt("sp_max", spawnerMaxDelay);
+        t.putInt("sp_count", spawnerCount);
+        t.putInt("sp_near", spawnerMaxNearby);
+        t.putInt("sp_player", spawnerPlayerRange);
+        t.putInt("sp_range", spawnerRange);
         t.putBoolean("locked", locked);
         if (owner != null) t.putUUID("owner", owner);
         if (!paint.isEmpty()) {
@@ -252,7 +272,14 @@ public class BlockConfig {
         c.light = t.getInt("light");
         c.bounce = t.getFloat("bounce");
         c.storageRows = t.contains("rows") ? t.getInt("rows") : 3;
-        c.stackLimit = t.contains("stack_limit") ? t.getInt("stack_limit") : 64;
+        if (t.contains("sp_min")) {
+            c.spawnerMinDelay = t.getInt("sp_min");
+            c.spawnerMaxDelay = t.getInt("sp_max");
+            c.spawnerCount = t.getInt("sp_count");
+            c.spawnerMaxNearby = t.getInt("sp_near");
+            c.spawnerPlayerRange = t.getInt("sp_player");
+            c.spawnerRange = t.getInt("sp_range");
+        }
         c.locked = t.getBoolean("locked");
         if (t.hasUUID("owner")) c.owner = t.getUUID("owner");
         if (t.contains("paint")) {

@@ -22,9 +22,9 @@ Adds a single item - the **Configurator** (a paper). Right-click any placed bloc
 | Redstone power 0-15 | The block emits a redstone signal |
 | Bounciness | Acts like a trampoline and cancels fall damage (sneak to avoid bouncing) |
 | Gravity | The block falls like sand; its configuration and contents travel with it |
-| Storage settings | For chest / shulker: **rows** (1-6, chest only), **stack limit per slot** (1-99; unstackable items stay at 1), and a **lock** (only the owner or ops can open, edit or break the block; furnaces can be locked too) |
+| Storage settings | For chest / shulker: **rows** (1-6, chest only) and a **lock** (only the owner or ops can open, edit or break the block; furnaces can be locked too) |
 | Painting | **Paint...** button opens a 16x16 pixel editor for the face you clicked (switch faces inside the editor). Tools: pencil, eraser, fill, picker, undo; 16 dye colors plus any `#RRGGBB`; right mouse button erases. The original texture is shown underneath, unpainted pixels stay vanilla |
-| Function | Chest (27 slots, persistent), **Shulker Box** (27 slots), Ender Chest, Crafting Table, Furnace, Blast Furnace, Smoker, Anvil, Enchanting Table, Smithing Table, Grindstone, Loom, Cartography Table, Stonecutter, Jukebox (right-click with a music disc), **Spawner** (spawns the entity whose id you type, e.g. `minecraft:zombie`) |
+| Function | Chest (27 slots, persistent), **Shulker Box** (27 slots), Ender Chest, Crafting Table, Furnace, Blast Furnace, Smoker, Anvil, Enchanting Table, Smithing Table, Grindstone, Loom, Cartography Table, Stonecutter, Jukebox (right-click with a music disc), **Spawner** (pick a mob from a searchable list of all entities or type its id; settings: min/max delay, mobs per spawn, max nearby mobs, player range, spawn radius) |
 
 Settings are bound to the **specific block in the world** and stored per dimension. If the block is broken or replaced, its settings are removed and stored items are dropped.
 
