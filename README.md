@@ -38,14 +38,3 @@ Settings are bound to the **specific block in the world** and stored per dimensi
 * Shulker function is a 27-slot container; contents drop as items when the block is broken (they are not kept inside the block item).
 * Paintings are drawn as an overlay, so they fit full-cube blocks best (stairs, slabs and plants show the picture on the full cube face). Faces hidden by solid neighbors are not drawn, and paintings render within 128 blocks.
 * The mod is required on both client and server. One mixin is used (`BlockStateBase`).
-
-## Uploading to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/<YOUR_NAME>/configuration-blocks.git
-git push -u origin main
-```
